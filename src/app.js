@@ -55,12 +55,10 @@ export default () => {
       .validate(inputValue)
       .then((validatedUrl) => {
         usedUrls.push(validatedUrl);
-        watchedState.inputForm.valid = 'valid'
-        console.log(watchedState);
+        watchedState.inputForm.valid = 'valid';
       })
       .catch((e) => { 
         watchedState.inputForm.valid = e.message;
-        console.log(watchedState)
       });
   
   });
