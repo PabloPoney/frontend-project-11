@@ -12,39 +12,39 @@ export default () => {
   })
   .then(() => {
     const elements = {
-      form: document.querySelector('[data="form"]'),
-      input: document.querySelector('[data="input"]'),
-      informAlert: document.querySelector('.feedback'),
-      formControl: document.querySelector('.form-control'),
+      form: document.querySelector('.rss-form'),
+      input: document.querySelector('.form-control'),
+      validationAlert: document.querySelector('.feedback'),
     };
 
     const state = {
       inputForm: {},
+      usedUrls: [],
     }
-    const watchedState = onChange(state, () => {
+    const watchedState = onChange(state.inputForm, () => {
       const originalState = onChange.target(watchedState);
       render(originalState, elements, i18n);
     });
-    const usedUrls = [];
+
+    elements.input.addEventListener('change', (e) => {
+      state.currentValue = e.target.value.trim();
+    });
   
-    elements.form.addEventListener('submit', async (e) => {
+    elements.form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const inputValue = elements.input.value;
-      
       const schema = yup
         .string()
         .url('not-valid')
-        .notOneOf(usedUrls, 're-link');
+        .notOneOf(state.usedUrls, 're-link');
       schema
-        .validate(inputValue)
-        .then((validatedUrl) => {
-          usedUrls.push(validatedUrl);
-          watchedState.inputForm.valid = 'valid';
+        .validate(state.currentValue)
+        .then(() => {
+          watchedState.valid = 'valid';
+          state.usedUrls.push(state.currentValue);
         })
         .catch((e) => { 
-          watchedState.inputForm.valid = e.message;
+          watchedState.valid = e.message;
         });
-
     });
   });
 };
