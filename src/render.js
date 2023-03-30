@@ -19,6 +19,7 @@ export default (state, elements, i18n) => {
       validationAlert.textContent = i18n.t('errors.reLink');
       break;
     default:
+      console.log('wtf?');
       break;
   }
 };
