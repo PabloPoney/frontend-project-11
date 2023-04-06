@@ -27,9 +27,11 @@ export default (state) => {
   const fetchFeed = () => axios.get(proxyUrl)
     .then((response) => parseFeed(response.data.contents))
     .then((data) => ({ ...data, url }))
-    .then((feed) => {
-      state.feeds.push(feed);
-    })
+    // .then((feed) => {
+      // if (feed.title === undefined) throw new Error('no RSS');
+      // state.feeds.push(feed);
+    //   console.log(feed);
+    // })
     .catch((err) => {
       throw new Error(`Failed to load feed from URL: ${url}. Error: ${err.message}`);
     });

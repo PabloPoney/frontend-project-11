@@ -77,6 +77,11 @@ const renederValidation = (state, elements, i18n) => {
       input.classList.add('is-invalid');
       validationAlert.textContent = i18n.t('errors.reLink');
       break;
+    case 'no-rss':
+      validationAlert.classList.replace('text-success', 'text-danger');
+      input.classList.add('is-invalid');
+      validationAlert.textContent = i18n.t('errors.noRss');
+      break;
     default:
       console.log(state.validation);
       break;
@@ -84,15 +89,17 @@ const renederValidation = (state, elements, i18n) => {
 };
 
 export default (state, elements, i18n, path) => {
-  console.log(generateId(), state);
+  const { postsBlock } = elements;
   switch (path) {
     case 'inputForm.validation':
       renederValidation(state,elements, i18n);
       break;
     case 'feeds':
       const posts = renderPosts(state.feeds[0], elements);
-      elements.postsBlock.appendChild(posts);
-      console.log(posts)
+      while (postsBlock.firstChild) {
+        postsBlock.removeChild(postsBlock.firstChild);
+      }
+      postsBlock.appendChild(posts);
       break;
     default:
       console.log(state.validation);

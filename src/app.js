@@ -5,6 +5,20 @@ import resources from './locales/index.js';
 import render from './render.js';
 import updateFeeds from './parser.js'
 
+// const feedHandler = (state) => {
+//   updateFeeds(state)
+//     .then((feed) => {
+//       if (feed.items.length === 0) {
+//         state.inputForm.validation = 'no-rss';
+//       } else {
+//         state.feeds.push(feed);
+//         state.inputForm.validation = 'valid'
+//         state.usedUrls = feed.url;
+//         console.log(feed.url);
+//       }
+//     })
+// };
+
 export default () => {
   const elements = {
     form: document.querySelector('.rss-form'),
@@ -44,9 +58,16 @@ export default () => {
       schema
         .validate(state.inputForm.currentValue)
         .then(() => {
-          watchedState.inputForm.validation = 'valid';
-          state.usedUrls.push(state.inputForm.currentValue);
-          updateFeeds(watchedState);
+          updateFeeds(state)
+          .then((feed) => {
+            if (feed.items.length === 0) {
+              watchedState.inputForm.validation = 'no-rss';
+            } else {
+              watchedState.feeds.push(feed);
+              watchedState.inputForm.validation = 'valid'
+              state.usedUrls.push(state.inputForm.currentValue);
+            }
+          })
         })
         .catch((e) => {
           console.log(e)
