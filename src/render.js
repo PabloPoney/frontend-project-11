@@ -1,9 +1,11 @@
+import _ from 'lodash';
+
 const generateId = (() => {
   let id = 0;
   return () => id += 1;
 })();
 
-const renderPosts = (feed) => {
+const renderPosts = (feeds) => {
   const postsCardElement = document.createElement('div');
   postsCardElement.classList.add('card', 'border-0');
 
@@ -18,39 +20,40 @@ const renderPosts = (feed) => {
   const postsListGroupElement = document.createElement('ul');
   postsListGroupElement.classList.add('list-group', 'boreder-0', 'rounded-0');
 
-  for (const item of feed.items) {
-    const itemListElement = document.createElement('li');
-    const itemListClasses = [
-      "list-group-item",
-      "d-flex","justify-content-between",
-      "align-items-start",
-      "border-0",
-      "border-end-0"
-    ];
-    itemListElement.classList.add(...itemListClasses);
-
-    const elementId = generateId();
-
-    const linkListElement = document.createElement('a');
-    linkListElement.classList.add('fw-bold');
-    linkListElement.href = item.link;
-    linkListElement.dataset.id = elementId;
-    linkListElement.target = '_blank';
-    linkListElement.rel = 'noopener noreferrer';
-    linkListElement.textContent = item.title;
-
-    const buttonListElement = document.createElement('button');
-    buttonListElement.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-    buttonListElement.dataset.id = elementId;
-    buttonListElement.dataset.bsToggle = 'modal';
-    buttonListElement.dataset.bsTarget = '#modal';
-    buttonListElement.textContent = 'Просмотр';
-
-    
-    itemListElement.appendChild(linkListElement);
-    itemListElement.appendChild(buttonListElement);
-    postsListGroupElement.appendChild(itemListElement);
-  }
+  _.flatMap(_.reverse(feeds), (feed) => feed.items)
+    .forEach((item) => {
+      const itemListElement = document.createElement('li');
+      const itemListClasses = [
+        "list-group-item",
+        "d-flex","justify-content-between",
+        "align-items-start",
+        "border-0",
+        "border-end-0"
+      ];
+      itemListElement.classList.add(...itemListClasses);
+  
+      const elementId = generateId();
+  
+      const linkListElement = document.createElement('a');
+      linkListElement.classList.add('fw-bold');
+      linkListElement.href = item.link;
+      linkListElement.dataset.id = elementId;
+      linkListElement.target = '_blank';
+      linkListElement.rel = 'noopener noreferrer';
+      linkListElement.textContent = item.title;
+  
+      const buttonListElement = document.createElement('button');
+      buttonListElement.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      buttonListElement.dataset.id = elementId;
+      buttonListElement.dataset.bsToggle = 'modal';
+      buttonListElement.dataset.bsTarget = '#modal';
+      buttonListElement.textContent = 'Просмотр';
+  
+      
+      itemListElement.appendChild(linkListElement);
+      itemListElement.appendChild(buttonListElement);
+      postsListGroupElement.appendChild(itemListElement);
+    });
 
   postsCardElement.appendChild(postsCardBodyElement);
   postsCardElement.appendChild(postsListGroupElement);
@@ -58,7 +61,7 @@ const renderPosts = (feed) => {
 };
 
 const renederValidation = (state, elements, i18n) => {
-  const { validationAlert, input, posts } = elements;
+  const { validationAlert, input } = elements;
   switch (state.inputForm.validation) {
     case 'valid':
       validationAlert.classList.replace('text-danger', 'text-success');
@@ -95,7 +98,7 @@ export default (state, elements, i18n, path) => {
       renederValidation(state,elements, i18n);
       break;
     case 'feeds':
-      const posts = renderPosts(state.feeds[0], elements);
+      const posts = renderPosts(state.feeds, elements);
       while (postsBlock.firstChild) {
         postsBlock.removeChild(postsBlock.firstChild);
       }

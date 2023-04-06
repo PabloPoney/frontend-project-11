@@ -5,19 +5,26 @@ import resources from './locales/index.js';
 import render from './render.js';
 import updateFeeds from './parser.js'
 
-// const feedHandler = (state) => {
-//   updateFeeds(state)
-//     .then((feed) => {
-//       if (feed.items.length === 0) {
-//         state.inputForm.validation = 'no-rss';
-//       } else {
-//         state.feeds.push(feed);
-//         state.inputForm.validation = 'valid'
-//         state.usedUrls = feed.url;
-//         console.log(feed.url);
-//       }
-//     })
-// };
+const feedHandler = (state, watchedState, url) => {
+  updateFeeds(url, watchedState)
+  .then((feed) => {
+    if (feed.items.length === 0) {
+      watchedState.inputForm.validation = 'no-rss';
+      state.inputForm.validation = null;
+    } else {
+      watchedState.feeds.push(feed);
+      watchedState.inputForm.validation = 'valid'
+      state.usedUrls.push(state.inputForm.currentValue);
+      state.inputForm.validation = null;
+    }
+  })
+  // .finally(() => {
+  //   const updateFeeds = (state) => {
+  //     state.feeds.forEach((feed) => updateFeeds(feed.url));
+  //     setTimeout(updateFeeds, 5000, state)
+  //   }
+  // })
+};
 
 export default () => {
   const elements = {
@@ -28,7 +35,10 @@ export default () => {
   };
 
   const state = {
-    inputForm: {},
+    inputForm: {
+      currentValue: null,
+      validation: null,
+    },
     usedUrls: [],
     feeds: [],
   }
@@ -58,20 +68,24 @@ export default () => {
       schema
         .validate(state.inputForm.currentValue)
         .then(() => {
-          updateFeeds(state)
-          .then((feed) => {
-            if (feed.items.length === 0) {
-              watchedState.inputForm.validation = 'no-rss';
-            } else {
-              watchedState.feeds.push(feed);
-              watchedState.inputForm.validation = 'valid'
-              state.usedUrls.push(state.inputForm.currentValue);
-            }
-          })
+          // updateFeeds(state)
+          // .then((feed) => {
+          //   if (feed.items.length === 0) {
+          //     watchedState.inputForm.validation = 'no-rss';
+          //     state.inputForm.validation = null;
+          //   } else {
+          //     watchedState.feeds.push(feed);
+          //     watchedState.inputForm.validation = 'valid'
+          //     state.usedUrls.push(state.inputForm.currentValue);
+          //     state.inputForm.validation = null;
+          //   }
+          // })
+          feedHandler(state, watchedState, state.inputForm.currentValue);
         })
         .catch((e) => {
           console.log(e)
           watchedState.inputForm.validation = e.message;
+          state.inputForm.validation = null;
         });
     });
   });

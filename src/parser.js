@@ -7,9 +7,8 @@ const getProxyUrl = (url) => {
   return urlWithProxy;
 };
 
-export default (state) => {
-  const url = state.inputForm.currentValue;
-  const proxyUrl = getProxyUrl(url);
+export default (url, state) => {
+  // const proxyUrl = getProxyUrl(url);
 
   const parseFeed = (xml) => {
     const parser = new DOMParser();
@@ -24,26 +23,22 @@ export default (state) => {
     return { title, description, items };
   };
 
-  const fetchFeed = () => axios.get(proxyUrl)
+  const fetchFeed = (url) => axios.get(getProxyUrl(url))
     .then((response) => parseFeed(response.data.contents))
     .then((data) => ({ ...data, url }))
-    // .then((feed) => {
-      // if (feed.title === undefined) throw new Error('no RSS');
-      // state.feeds.push(feed);
-    //   console.log(feed);
-    // })
     .catch((err) => {
       throw new Error(`Failed to load feed from URL: ${url}. Error: ${err.message}`);
     });
 
-  // const updateFeeds = () => {
-  //   const promises = state.feeds.map((feed) => fetchFeed(feed.url));
-  //   Promise.all(promises)
-  //     .then((feeds) => {
-  //       state.feedsData = feeds;
-  //     })
-  //     .finally(() => setTimeout(updateFeeds, 5000));
-  // };
-  // updateFeeds();
+    const updateFeeds = (state) => {
+      const promises = state.feeds.map((feed) => fetchFeed(feed.url));
+      Promise.all(promises)
+      .then((feeds) => {
+        state.feeds = feeds;
+      })
+      .finally(() => setTimeout(updateFeeds, 5000, state));
+    }
+    updateFeeds(state);
+
   return fetchFeed(url);
 };
