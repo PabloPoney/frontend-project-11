@@ -3,27 +3,29 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import resources from './locales/index.js';
 import render from './render.js';
-import updateFeeds from './parser.js'
+import getFeed from './parser.js'
+import _ from 'lodash';
 
 const feedHandler = (state, watchedState, url) => {
-  updateFeeds(url, watchedState)
+  getFeed(url, state, watchedState)
   .then((feed) => {
     if (feed.items.length === 0) {
       watchedState.inputForm.validation = 'no-rss';
       state.inputForm.validation = null;
     } else {
-      watchedState.feeds.push(feed);
       watchedState.inputForm.validation = 'valid'
-      state.usedUrls.push(state.inputForm.currentValue);
+      watchedState.feeds.push({
+        title: feed.title,
+        url: feed.url,
+        description: feed.description,
+      });
+      const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
+      watchedState.posts = [ ...newPosts, ...state.posts ];
+      state.usedUrls.push(feed.url);
       state.inputForm.validation = null;
+      state.inputForm.currentValue = null;
     }
   })
-  // .finally(() => {
-  //   const updateFeeds = (state) => {
-  //     state.feeds.forEach((feed) => updateFeeds(feed.url));
-  //     setTimeout(updateFeeds, 5000, state)
-  //   }
-  // })
 };
 
 export default () => {
@@ -39,12 +41,13 @@ export default () => {
       currentValue: null,
       validation: null,
     },
-    usedUrls: [],
     feeds: [],
+    posts: [],
+    usedUrls: [],
   }
   const watchedState = onChange(state, (path) => {
-    const originalState = onChange.target(watchedState);
-    render(originalState, elements, i18n, path);
+    // render(state, elements, i18n, path);
+    console.log(path, state);
   });
 
   const i18n = i18next.createInstance();
@@ -68,18 +71,6 @@ export default () => {
       schema
         .validate(state.inputForm.currentValue)
         .then(() => {
-          // updateFeeds(state)
-          // .then((feed) => {
-          //   if (feed.items.length === 0) {
-          //     watchedState.inputForm.validation = 'no-rss';
-          //     state.inputForm.validation = null;
-          //   } else {
-          //     watchedState.feeds.push(feed);
-          //     watchedState.inputForm.validation = 'valid'
-          //     state.usedUrls.push(state.inputForm.currentValue);
-          //     state.inputForm.validation = null;
-          //   }
-          // })
           feedHandler(state, watchedState, state.inputForm.currentValue);
         })
         .catch((e) => {

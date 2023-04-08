@@ -1,4 +1,5 @@
 import axios from 'axios';
+import _ from 'lodash';
 
 const getProxyUrl = (url) => {
   const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
@@ -7,9 +8,7 @@ const getProxyUrl = (url) => {
   return urlWithProxy;
 };
 
-export default (url, state) => {
-  // const proxyUrl = getProxyUrl(url);
-
+export default (url, state, watchedState) => {
   const parseFeed = (xml) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(xml, 'application/xml');
@@ -30,15 +29,20 @@ export default (url, state) => {
       throw new Error(`Failed to load feed from URL: ${url}. Error: ${err.message}`);
     });
 
-    const updateFeeds = (state) => {
-      const promises = state.feeds.map((feed) => fetchFeed(feed.url));
-      Promise.all(promises)
-      .then((feeds) => {
-        state.feeds = feeds;
+  const updateFeeds = (state) => {
+    const promises = state.feeds.map((feed) => fetchFeed(feed.url));
+    Promise.all(promises)
+    .then((feeds) => {
+      feeds.forEach((feed) => {
+        const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
+        if (newPosts.length > 0) {
+          watchedState.posts = [ ...newPosts, ...state.posts ];
+        }
       })
-      .finally(() => setTimeout(updateFeeds, 5000, state));
-    }
-    updateFeeds(state);
+    })
+    .finally(() => setTimeout(updateFeeds, 5000, state));
+  }
+  updateFeeds(state);
 
   return fetchFeed(url);
 };
