@@ -1,11 +1,13 @@
-import _ from 'lodash';
+const idGeneratorFactory = () => {
+  let counter = 0;
+  return () => {
+    return counter += 1;
+  }
+};
 
-const generateId = (() => {
-  let id = 0;
-  return () => id += 1;
-})();
+const renderPosts = (posts) => {
+  const generateId = idGeneratorFactory();
 
-const renderPosts = (feeds) => {
   const postsCardElement = document.createElement('div');
   postsCardElement.classList.add('card', 'border-0');
 
@@ -20,8 +22,8 @@ const renderPosts = (feeds) => {
   const postsListGroupElement = document.createElement('ul');
   postsListGroupElement.classList.add('list-group', 'boreder-0', 'rounded-0');
 
-  _.flatMap(_.reverse(feeds), (feed) => feed.items)
-    .forEach((item) => {
+ 
+  posts.forEach((post) => {
       const itemListElement = document.createElement('li');
       const itemListClasses = [
         "list-group-item",
@@ -36,11 +38,11 @@ const renderPosts = (feeds) => {
   
       const linkListElement = document.createElement('a');
       linkListElement.classList.add('fw-bold');
-      linkListElement.href = item.link;
+      linkListElement.href = post.link;
       linkListElement.dataset.id = elementId;
       linkListElement.target = '_blank';
       linkListElement.rel = 'noopener noreferrer';
-      linkListElement.textContent = item.title;
+      linkListElement.textContent = post.title;
   
       const buttonListElement = document.createElement('button');
       buttonListElement.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -53,7 +55,7 @@ const renderPosts = (feeds) => {
       itemListElement.appendChild(linkListElement);
       itemListElement.appendChild(buttonListElement);
       postsListGroupElement.appendChild(itemListElement);
-    });
+  });
 
   postsCardElement.appendChild(postsCardBodyElement);
   postsCardElement.appendChild(postsListGroupElement);
@@ -98,14 +100,16 @@ export default (state, elements, i18n, path) => {
       renederValidation(state,elements, i18n);
       break;
     case 'feeds':
-      const posts = renderPosts(state.feeds, elements);
+      break;
+    case 'posts':
+      const posts = renderPosts(state.posts, elements);
       while (postsBlock.firstChild) {
         postsBlock.removeChild(postsBlock.firstChild);
       }
       postsBlock.appendChild(posts);
       break;
     default:
-      console.log(state.validation);
+      console.log('render error:', state);
       break;
   }
 };

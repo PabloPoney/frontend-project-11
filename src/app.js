@@ -3,15 +3,15 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import resources from './locales/index.js';
 import render from './render.js';
-import getFeed from './parser.js'
+import { fetchFeed, updateFeeds } from './parser.js'
 import _ from 'lodash';
 
 const feedHandler = (state, watchedState, url) => {
-  getFeed(url, state, watchedState)
+  fetchFeed(url)
   .then((feed) => {
     if (feed.items.length === 0) {
+      console.log('no-rss');
       watchedState.inputForm.validation = 'no-rss';
-      state.inputForm.validation = null;
     } else {
       watchedState.inputForm.validation = 'valid'
       watchedState.feeds.push({
@@ -22,9 +22,10 @@ const feedHandler = (state, watchedState, url) => {
       const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
       watchedState.posts = [ ...newPosts, ...state.posts ];
       state.usedUrls.push(feed.url);
-      state.inputForm.validation = null;
-      state.inputForm.currentValue = null;
     }
+  })
+  .finally(() => {
+    state.inputForm.validation = null;
   })
 };
 
@@ -46,7 +47,7 @@ export default () => {
     usedUrls: [],
   }
   const watchedState = onChange(state, (path) => {
-    // render(state, elements, i18n, path);
+    render(state, elements, i18n, path);
     console.log(path, state);
   });
 
@@ -80,4 +81,6 @@ export default () => {
         });
     });
   });
+
+  updateFeeds(state, watchedState);
 };
