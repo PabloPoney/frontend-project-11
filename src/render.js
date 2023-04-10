@@ -137,6 +137,12 @@ const postsRender = (state, elements, i18n) => {
 
 const feedbackAlertRender = (state, elements, i18n) => {
   const { feedbackAlert, input } = elements;
+  const errorAlertRender = (error) => {
+    feedbackAlert.classList.replace('text-success', 'text-danger');
+    feedbackAlert.textContent = error;
+    input.classList.add('is-invalid');
+  };
+
   switch (state.inputForm.status) {
     case 'valid':
       feedbackAlert.classList.replace('text-danger', 'text-success');
@@ -146,29 +152,19 @@ const feedbackAlertRender = (state, elements, i18n) => {
       input.focus();
       break;
     case 'not-valid':
-      feedbackAlert.classList.replace('text-success', 'text-danger');
-      feedbackAlert.textContent = i18n.t('errors.notValid');
-      input.classList.add('is-invalid');
+      errorAlertRender(i18n.t('errors.notValid'));
       break;
     case 're-link':
-      feedbackAlert.classList.add('text-danger');
-      feedbackAlert.textContent = i18n.t('errors.reLink');
-      input.classList.add('is-invalid');
+      errorAlertRender(i18n.t('errors.reLink'));
       break;
     case 'no-rss':
-      feedbackAlert.classList.replace('text-success', 'text-danger');
-      feedbackAlert.textContent = i18n.t('errors.noRss');
-      input.classList.add('is-invalid');
+      errorAlertRender(i18n.t('errors.noRss'));
       break;
     case 'network-error':
-      feedbackAlert.classList.replace('text-success', 'text-danger');
-      feedbackAlert.textContent = i18n.t('errors.networkError');
-      input.classList.add('is-invalid');
+      errorAlertRender(i18n.t('errors.networkError'));
       break;
     default:
-      feedbackAlert.classList.replace('text-success', 'text-danger');
-      feedbackAlert.textContent = i18n.t('errors.default');
-      input.classList.add('is-invalid');
+      errorAlertRender(i18n.t('errors.default'));
       break;
   }
 };
