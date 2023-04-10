@@ -3,7 +3,7 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import resources from './locales/index.js';
 import render from './render.js';
-import { fetchFeed, updateFeeds } from './parser.js'
+import { fetchFeed, updateFeeds } from './parser.js';
 import _ from 'lodash';
 
 const feedHandler = (state, watchedState, url) => {
@@ -14,19 +14,25 @@ const feedHandler = (state, watchedState, url) => {
       watchedState.inputForm.validation = 'no-rss';
     } else {
       watchedState.inputForm.validation = 'valid'
-      watchedState.feeds.push({
+
+      const newFeed = {
         title: feed.title,
         url: feed.url,
         description: feed.description,
-      });
+      };
+      watchedState.feeds = [ newFeed, ...state.feeds ];
+
       const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
       watchedState.posts = [ ...newPosts, ...state.posts ];
+
       state.usedUrls.push(feed.url);
+      state.inputForm.currentValue = null;
     }
   })
-  .finally(() => {
-    state.inputForm.validation = null;
-  })
+  .catch((err) => {
+    console.log('handler',err.message);
+    watchedState.inputForm.validation = err.message;
+  });
 };
 
 export default () => {
@@ -35,6 +41,8 @@ export default () => {
     input: document.querySelector('.form-control'),
     validationAlert: document.querySelector('.feedback'),
     postsBlock: document.querySelector('.posts'),
+    feedsBlock: document.querySelector('.feeds'),
+    modalBlock: document.getElementById('modal'),
   };
 
   const state = {
@@ -44,6 +52,7 @@ export default () => {
     },
     feeds: [],
     posts: [],
+    touchedPostsId: new Set(),
     usedUrls: [],
   }
   const watchedState = onChange(state, (path) => {
@@ -74,11 +83,13 @@ export default () => {
         .then(() => {
           feedHandler(state, watchedState, state.inputForm.currentValue);
         })
-        .catch((e) => {
-          console.log(e)
-          watchedState.inputForm.validation = e.message;
+        .catch((err) => {
+          console.log('validator',err)
+          watchedState.inputForm.validation = err.message;
+        })
+        .finally(() => {
           state.inputForm.validation = null;
-        });
+        })
     });
   });
 

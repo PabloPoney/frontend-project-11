@@ -1,12 +1,58 @@
-const idGeneratorFactory = () => {
-  let counter = 0;
+const idGeneratorFactory = (counter) => {
+  let id = counter;
   return () => {
-    return counter += 1;
+    return id--;
   }
 };
 
-const renderPosts = (posts) => {
-  const generateId = idGeneratorFactory();
+const feedsGenerator = (feeds) => {
+  const feedsCardElement = document.createElement('div');
+  feedsCardElement.classList.add('card', 'border-0');
+  
+  const feedsCardBodyElement = document.createElement('div');
+  feedsCardBodyElement.classList.add('card-body');
+
+  const feedsCardTitleElement = document.createElement('h2');
+  feedsCardTitleElement.classList.add('card-title', 'h4');
+  feedsCardTitleElement.textContent = 'Фиды';
+  feedsCardBodyElement.appendChild(feedsCardTitleElement);
+
+  const feedsListGroupElement = document.createElement('ul');
+  feedsListGroupElement.classList.add('list-group', 'boreder-0', 'rounded-0');
+
+  feeds.forEach((feed) => {
+    const itemListElement = document.createElement('li');
+    const itemListClasses = [
+      "list-group-item",
+      "border-0",
+      "border-end-0"
+    ];
+    itemListElement.classList.add(...itemListClasses);
+
+    const itemListTitle = document.createElement('h3');
+    itemListTitle.classList.add('h6', 'm-0');
+    itemListTitle.textContent = feed.title;
+
+
+    const itemListDescription = document.createElement('p');
+    itemListDescription.classList.add('m-0','small', 'text-black-50');
+    itemListDescription.textContent = feed.description;
+
+    itemListElement.appendChild(itemListTitle);
+    itemListElement.appendChild(itemListDescription);
+
+    feedsListGroupElement.appendChild(itemListElement);
+  });
+
+  feedsCardElement.appendChild(feedsCardBodyElement);
+  feedsCardElement.appendChild(feedsListGroupElement);
+
+  return feedsCardElement;
+};
+
+const postsGenerator = (posts, elements, state) => {
+  const generateId = idGeneratorFactory(posts.length);
+  const { modalBlock } = elements;
 
   const postsCardElement = document.createElement('div');
   postsCardElement.classList.add('card', 'border-0');
@@ -27,7 +73,8 @@ const renderPosts = (posts) => {
       const itemListElement = document.createElement('li');
       const itemListClasses = [
         "list-group-item",
-        "d-flex","justify-content-between",
+        "d-flex",
+        "justify-content-between",
         "align-items-start",
         "border-0",
         "border-end-0"
@@ -37,12 +84,20 @@ const renderPosts = (posts) => {
       const elementId = generateId();
   
       const linkListElement = document.createElement('a');
-      linkListElement.classList.add('fw-bold');
+      const linkListClasses = state.touchedPostsId.has(elementId) ?
+        ['fw-normal', 'link-secondary'] :
+        ['fw-bold'];
+      linkListElement.classList.add(...linkListClasses);
       linkListElement.href = post.link;
       linkListElement.dataset.id = elementId;
       linkListElement.target = '_blank';
       linkListElement.rel = 'noopener noreferrer';
       linkListElement.textContent = post.title;
+      linkListElement.addEventListener('click', () => {
+        linkListElement.classList.remove('fw-bold');
+        linkListElement.classList.add('fw-normal', 'link-secondary');
+        state.touchedPostsId.add(elementId);
+      });
   
       const buttonListElement = document.createElement('button');
       buttonListElement.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -50,7 +105,18 @@ const renderPosts = (posts) => {
       buttonListElement.dataset.bsToggle = 'modal';
       buttonListElement.dataset.bsTarget = '#modal';
       buttonListElement.textContent = 'Просмотр';
-  
+
+      buttonListElement.addEventListener('click', () => {
+        const modalTitleElement = modalBlock.querySelector('.modal-title');
+        const modalTextElement = modalBlock.querySelector('.text-break');
+        const modalLinkElement = modalBlock.querySelector('.btn-primary');
+        modalTitleElement.textContent = post.title;
+        modalTextElement.textContent = post.description;
+        modalLinkElement.href = post.link;
+        linkListElement.classList.remove('fw-bold');
+        linkListElement.classList.add('fw-normal', 'link-secondary');
+        state.touchedPostsId.add(elementId);
+      });
       
       itemListElement.appendChild(linkListElement);
       itemListElement.appendChild(buttonListElement);
@@ -59,10 +125,11 @@ const renderPosts = (posts) => {
 
   postsCardElement.appendChild(postsCardBodyElement);
   postsCardElement.appendChild(postsListGroupElement);
+
   return postsCardElement;
 };
 
-const renederValidation = (state, elements, i18n) => {
+const renderValidation = (state, elements, i18n) => {
   const { validationAlert, input } = elements;
   switch (state.inputForm.validation) {
     case 'valid':
@@ -87,29 +154,42 @@ const renederValidation = (state, elements, i18n) => {
       input.classList.add('is-invalid');
       validationAlert.textContent = i18n.t('errors.noRss');
       break;
+    case 'network-error':
+      validationAlert.classList.replace('text-success', 'text-danger');
+      input.classList.add('is-invalid');
+      validationAlert.textContent = i18n.t('errors.networkError');
+      break;
     default:
-      console.log(state.validation);
+      validationAlert.classList.replace('text-success', 'text-danger');
+      input.classList.add('is-invalid');
+      validationAlert.textContent = i18n.t('errors.default');
       break;
   }
 };
 
 export default (state, elements, i18n, path) => {
-  const { postsBlock } = elements;
+  const { postsBlock, feedsBlock } = elements;
+  console.log(path);
   switch (path) {
     case 'inputForm.validation':
-      renederValidation(state,elements, i18n);
+      renderValidation(state, elements, i18n);
       break;
     case 'feeds':
+      const feeds = feedsGenerator(state.feeds);
+      while (feedsBlock.firstChild) {
+        feedsBlock.removeChild(feedsBlock.firstChild);
+      }
+      feedsBlock.appendChild(feeds);
       break;
     case 'posts':
-      const posts = renderPosts(state.posts, elements);
+      const posts = postsGenerator(state.posts, elements, state);
       while (postsBlock.firstChild) {
         postsBlock.removeChild(postsBlock.firstChild);
       }
       postsBlock.appendChild(posts);
       break;
     default:
-      console.log('render error:', state);
+      console.log(`error of render to the path:${path}\n`, state);
       break;
   }
 };

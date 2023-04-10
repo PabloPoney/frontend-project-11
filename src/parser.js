@@ -24,8 +24,8 @@ const parseFeed = (xml) => {
 export const fetchFeed = (url) => axios.get(getProxyUrl(url))
   .then((response) => parseFeed(response.data.contents))
   .then((data) => ({ ...data, url }))
-  .catch((err) => {
-    throw new Error(`Failed to load feed from URL: ${url}. Error: ${err.message}`);
+  .catch(() => {
+    throw new Error(`network-error`);
   });
 
 export const updateFeeds = (state, watchedState) => {
