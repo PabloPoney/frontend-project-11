@@ -169,7 +169,7 @@ const feedbackAlertRender = (state, elements, i18n) => {
   }
 };
 
-export const renderSwitch = (path, state, elements, i18n) => {
+export const render = (path, state, elements, i18n) => {
   switch (path) {
     case 'inputForm.status':
       feedbackAlertRender(state, elements, i18n);

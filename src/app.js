@@ -2,7 +2,7 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import resources from './locales/index.js';
-import { renderSwitch } from './render.js';
+import { render } from './render.js';
 import { fetchFeed, updateFeeds } from './parser.js';
 
 const feedHandler = (state, watchedState, url) => {
@@ -53,7 +53,7 @@ export const app = () => {
     usedUrls: [],
   };
   const watchedState = onChange(state, (path) => {
-    renderSwitch(path, state, elements, i18n);
+    render(path, state, elements, i18n);
   });
 
   const i18n = i18next.createInstance();
