@@ -2,193 +2,190 @@ const idGeneratorFactory = (counter) => {
   let id = counter;
   return () => {
     return id--;
-  }
+  };
 };
 
-const feedsGenerator = (feeds) => {
-  const feedsCardElement = document.createElement('div');
-  feedsCardElement.classList.add('card', 'border-0');
-  
-  const feedsCardBodyElement = document.createElement('div');
-  feedsCardBodyElement.classList.add('card-body');
+const cardBlockGenerator = (titleName) => {
+  const cardBlock = document.createElement('div');
+  cardBlock.classList.add('card', 'border-0');
 
-  const feedsCardTitleElement = document.createElement('h2');
-  feedsCardTitleElement.classList.add('card-title', 'h4');
-  feedsCardTitleElement.textContent = 'Фиды';
-  feedsCardBodyElement.appendChild(feedsCardTitleElement);
+  const titleBlock = document.createElement('div');
+  titleBlock.classList.add('card-body');
 
-  const feedsListGroupElement = document.createElement('ul');
-  feedsListGroupElement.classList.add('list-group', 'boreder-0', 'rounded-0');
+  const titleElement = document.createElement('h2');
+  titleElement.classList.add('card-title', 'h4');
+  titleElement.textContent = titleName;
+  titleBlock.appendChild(titleElement);
+
+  const listGroupBlock = document.createElement('ul');
+  listGroupBlock.classList.add('list-group', 'boreder-0', 'rounded-0');
+
+  cardBlock.appendChild(titleBlock);
+  cardBlock.appendChild(listGroupBlock);
+
+  return cardBlock;
+};
+
+const feedsRender = (state, elements, i18n) => {
+  const { feedsBlock } = elements;
+  while (feedsBlock.firstChild) {
+    feedsBlock.removeChild(feedsBlock.firstChild);
+  }
+
+  const { feeds } = state;
+
+  const feedsCardBlock = cardBlockGenerator(i18n.t('feeds'));
+  const feedsListGroupBlock = feedsCardBlock.querySelector('.list-group');
 
   feeds.forEach((feed) => {
-    const itemListElement = document.createElement('li');
-    const itemListClasses = [
-      "list-group-item",
-      "border-0",
-      "border-end-0"
-    ];
-    itemListElement.classList.add(...itemListClasses);
+    const feedListElement = document.createElement('li');
+    feedListElement.classList.add(
+      'list-group-item',
+      'border-0',
+      'border-end-0'
+    );
 
-    const itemListTitle = document.createElement('h3');
-    itemListTitle.classList.add('h6', 'm-0');
-    itemListTitle.textContent = feed.title;
+    const feedListTitle = document.createElement('h3');
+    feedListTitle.classList.add('h6', 'm-0');
+    feedListTitle.textContent = feed.title;
 
+    const feedListDescription = document.createElement('p');
+    feedListDescription.classList.add('m-0', 'small', 'text-black-50');
+    feedListDescription.textContent = feed.description;
 
-    const itemListDescription = document.createElement('p');
-    itemListDescription.classList.add('m-0','small', 'text-black-50');
-    itemListDescription.textContent = feed.description;
+    feedListElement.appendChild(feedListTitle);
+    feedListElement.appendChild(feedListDescription);
 
-    itemListElement.appendChild(itemListTitle);
-    itemListElement.appendChild(itemListDescription);
-
-    feedsListGroupElement.appendChild(itemListElement);
+    feedsListGroupBlock.appendChild(feedListElement);
   });
-
-  feedsCardElement.appendChild(feedsCardBodyElement);
-  feedsCardElement.appendChild(feedsListGroupElement);
-
-  return feedsCardElement;
+  feedsBlock.appendChild(feedsCardBlock);
 };
 
-const postsGenerator = (posts, elements, state) => {
+const postsRender = (state, elements, i18n) => {
+  const { posts } = state;
   const generateId = idGeneratorFactory(posts.length);
-  const { modalBlock } = elements;
 
-  const postsCardElement = document.createElement('div');
-  postsCardElement.classList.add('card', 'border-0');
+  const { postsBlock, modalBlock } = elements;
+  while (postsBlock.firstChild) {
+    postsBlock.removeChild(postsBlock.firstChild);
+  }
 
-  const postsCardBodyElement = document.createElement('div');
-  postsCardBodyElement.classList.add('card-body');
+  const postsCardBlock = cardBlockGenerator(i18n.t('posts'));
+  const postsListGroupBlock = postsCardBlock.querySelector('.list-group');
 
-  const postsCardTitleElement = document.createElement('h2');
-  postsCardTitleElement.classList.add('card-title', 'h4');
-  postsCardTitleElement.textContent = 'Посты';
-  postsCardBodyElement.appendChild(postsCardTitleElement);
-
-  const postsListGroupElement = document.createElement('ul');
-  postsListGroupElement.classList.add('list-group', 'boreder-0', 'rounded-0');
-
- 
   posts.forEach((post) => {
-      const itemListElement = document.createElement('li');
-      const itemListClasses = [
-        "list-group-item",
-        "d-flex",
-        "justify-content-between",
-        "align-items-start",
-        "border-0",
-        "border-end-0"
-      ];
-      itemListElement.classList.add(...itemListClasses);
-  
-      const elementId = generateId();
-  
-      const linkListElement = document.createElement('a');
-      const linkListClasses = state.touchedPostsId.has(elementId) ?
-        ['fw-normal', 'link-secondary'] :
-        ['fw-bold'];
-      linkListElement.classList.add(...linkListClasses);
-      linkListElement.href = post.link;
-      linkListElement.dataset.id = elementId;
-      linkListElement.target = '_blank';
-      linkListElement.rel = 'noopener noreferrer';
-      linkListElement.textContent = post.title;
-      linkListElement.addEventListener('click', () => {
-        linkListElement.classList.remove('fw-bold');
-        linkListElement.classList.add('fw-normal', 'link-secondary');
-        state.touchedPostsId.add(elementId);
-      });
-  
-      const buttonListElement = document.createElement('button');
-      buttonListElement.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-      buttonListElement.dataset.id = elementId;
-      buttonListElement.dataset.bsToggle = 'modal';
-      buttonListElement.dataset.bsTarget = '#modal';
-      buttonListElement.textContent = 'Просмотр';
+    const elementId = generateId();
 
-      buttonListElement.addEventListener('click', () => {
-        const modalTitleElement = modalBlock.querySelector('.modal-title');
-        const modalTextElement = modalBlock.querySelector('.text-break');
-        const modalLinkElement = modalBlock.querySelector('.btn-primary');
-        modalTitleElement.textContent = post.title;
-        modalTextElement.textContent = post.description;
-        modalLinkElement.href = post.link;
-        linkListElement.classList.remove('fw-bold');
-        linkListElement.classList.add('fw-normal', 'link-secondary');
-        state.touchedPostsId.add(elementId);
-      });
-      
-      itemListElement.appendChild(linkListElement);
-      itemListElement.appendChild(buttonListElement);
-      postsListGroupElement.appendChild(itemListElement);
+    const postListElement = document.createElement('li');
+    const postListElementClasses = [
+      'list-group-item',
+      'd-flex',
+      'justify-content-between',
+      'align-items-start',
+      'border-0',
+      'border-end-0',
+    ];
+    postListElement.classList.add(...postListElementClasses);
+
+    const postListLink = document.createElement('a');
+    postListLink.href = post.link;
+    postListLink.dataset.id = elementId;
+    postListLink.target = '_blank';
+    postListLink.rel = 'noopener noreferrer';
+    postListLink.textContent = post.title;
+
+    const postListLinkClasses = state.touchedPostsId.has(elementId)
+      ? ['fw-normal', 'link-secondary']
+      : ['fw-bold'];
+    postListLink.classList.add(...postListLinkClasses);
+
+    const toTouchLink = () => {
+      postListLink.classList.remove('fw-bold');
+      postListLink.classList.add('fw-normal', 'link-secondary');
+      state.touchedPostsId.add(elementId);
+    };
+
+    postListLink.addEventListener('click', toTouchLink);
+
+    postListElement.appendChild(postListLink);
+
+    const postListButton = document.createElement('button');
+    postListButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    postListButton.dataset.id = elementId;
+    postListButton.dataset.bsToggle = 'modal';
+    postListButton.dataset.bsTarget = '#modal';
+    postListButton.textContent = 'Просмотр';
+
+    postListButton.addEventListener('click', () => {
+      const modalTitleElement = modalBlock.querySelector('.modal-title');
+      const modalTextElement = modalBlock.querySelector('.text-break');
+      const modalLinkElement = modalBlock.querySelector('.btn-primary');
+
+      modalTitleElement.textContent = post.title;
+      modalTextElement.textContent = post.description;
+      modalLinkElement.href = post.link;
+
+      toTouchLink();
+    });
+
+    postListElement.appendChild(postListButton);
+    postsListGroupBlock.appendChild(postListElement);
   });
 
-  postsCardElement.appendChild(postsCardBodyElement);
-  postsCardElement.appendChild(postsListGroupElement);
-
-  return postsCardElement;
+  postsBlock.appendChild(postsCardBlock);
 };
 
-const renderValidation = (state, elements, i18n) => {
-  const { validationAlert, input } = elements;
-  switch (state.inputForm.validation) {
+const feedbackAlertRender = (state, elements, i18n) => {
+  const { feedbackAlert, input } = elements;
+  switch (state.inputForm.status) {
     case 'valid':
-      validationAlert.classList.replace('text-danger', 'text-success');
+      feedbackAlert.classList.replace('text-danger', 'text-success');
+      feedbackAlert.textContent = i18n.t('rssAdded');
       input.classList.remove('is-invalid');
-      validationAlert.textContent = i18n.t('rssAdded');
       input.value = '';
       input.focus();
       break;
     case 'not-valid':
-      validationAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.textContent = i18n.t('errors.notValid');
       input.classList.add('is-invalid');
-      validationAlert.textContent = i18n.t('errors.notValid');
       break;
     case 're-link':
-      validationAlert.classList.add('text-danger');
+      feedbackAlert.classList.add('text-danger');
+      feedbackAlert.textContent = i18n.t('errors.reLink');
       input.classList.add('is-invalid');
-      validationAlert.textContent = i18n.t('errors.reLink');
       break;
     case 'no-rss':
-      validationAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.textContent = i18n.t('errors.noRss');
       input.classList.add('is-invalid');
-      validationAlert.textContent = i18n.t('errors.noRss');
       break;
     case 'network-error':
-      validationAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.textContent = i18n.t('errors.networkError');
       input.classList.add('is-invalid');
-      validationAlert.textContent = i18n.t('errors.networkError');
       break;
     default:
-      validationAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.classList.replace('text-success', 'text-danger');
+      feedbackAlert.textContent = i18n.t('errors.default');
       input.classList.add('is-invalid');
-      validationAlert.textContent = i18n.t('errors.default');
       break;
   }
 };
 
-export default (state, elements, i18n, path) => {
-  const { postsBlock, feedsBlock } = elements;
-  console.log(path);
+export const renderSwitch = (path, state, elements, i18n) => {
   switch (path) {
-    case 'inputForm.validation':
-      renderValidation(state, elements, i18n);
+    case 'inputForm.status':
+      feedbackAlertRender(state, elements, i18n);
       break;
     case 'feeds':
-      const feeds = feedsGenerator(state.feeds);
-      while (feedsBlock.firstChild) {
-        feedsBlock.removeChild(feedsBlock.firstChild);
-      }
-      feedsBlock.appendChild(feeds);
+      feedsRender(state, elements, i18n);
       break;
     case 'posts':
-      const posts = postsGenerator(state.posts, elements, state);
-      while (postsBlock.firstChild) {
-        postsBlock.removeChild(postsBlock.firstChild);
-      }
-      postsBlock.appendChild(posts);
+      postsRender(state, elements, i18n);
       break;
     default:
+      feedbackAlertRender(state, elements, i18n);
       console.log(`error of render to the path:${path}\n`, state);
       break;
   }

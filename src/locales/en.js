@@ -8,5 +8,7 @@ export default {
       networkError: 'Network error',
       default: 'Developer messed up',
     },
+    feeds: 'Feeds',
+    posts: 'Posts',
   },
 };

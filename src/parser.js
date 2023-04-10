@@ -37,7 +37,7 @@ export const updateFeeds = (state, watchedState) => {
       if (newPosts.length > 0) {
         watchedState.posts = [ ...newPosts, ...state.posts ];
       }
-    })
+    });
   })
   .finally(() => setTimeout(updateFeeds, 5000, state, watchedState));
 };

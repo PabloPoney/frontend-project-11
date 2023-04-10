@@ -8,5 +8,8 @@ export default {
       networkError: 'Ошибка сети',
       default: 'Разработчик что-то начудил',
     },
+    feeds: 'Фиды',
+    posts: 'Посты',
+    
   },
 };

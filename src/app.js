@@ -2,18 +2,14 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import i18next from 'i18next';
 import resources from './locales/index.js';
-import render from './render.js';
+import { renderSwitch } from './render.js';
 import { fetchFeed, updateFeeds } from './parser.js';
-import _ from 'lodash';
 
 const feedHandler = (state, watchedState, url) => {
   fetchFeed(url)
   .then((feed) => {
-    if (feed.items.length === 0) {
-      console.log('no-rss');
-      watchedState.inputForm.validation = 'no-rss';
-    } else {
-      watchedState.inputForm.validation = 'valid'
+    if (feed.items.length !== 0) {
+      watchedState.inputForm.status = 'valid';
 
       const newFeed = {
         title: feed.title,
@@ -21,48 +17,48 @@ const feedHandler = (state, watchedState, url) => {
         description: feed.description,
       };
       watchedState.feeds = [ newFeed, ...state.feeds ];
-
-      const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
-      watchedState.posts = [ ...newPosts, ...state.posts ];
+      watchedState.posts = [ ...feed.items, ...state.posts ];
 
       state.usedUrls.push(feed.url);
       state.inputForm.currentValue = null;
+    } else {
+      watchedState.inputForm.status = 'no-rss';
     }
   })
   .catch((err) => {
-    console.log('handler',err.message);
-    watchedState.inputForm.validation = err.message;
+    console.log('feedHandler:', err);
+    watchedState.inputForm.status = err.message;
   });
 };
 
-export default () => {
+export const app = () => {
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('.form-control'),
-    validationAlert: document.querySelector('.feedback'),
+    feedbackAlert: document.querySelector('.feedback'),
     postsBlock: document.querySelector('.posts'),
     feedsBlock: document.querySelector('.feeds'),
     modalBlock: document.getElementById('modal'),
   };
 
   const state = {
+    lng: 'ru',
     inputForm: {
       currentValue: null,
-      validation: null,
+      status: null,
     },
     feeds: [],
     posts: [],
     touchedPostsId: new Set(),
     usedUrls: [],
-  }
+  };
   const watchedState = onChange(state, (path) => {
-    render(state, elements, i18n, path);
-    console.log(path, state);
+    renderSwitch(path, state, elements, i18n);
   });
 
   const i18n = i18next.createInstance();
   i18n.init({
-    lng: 'ru',
+    lng: state.lng,
     debug: false,
     resources,
   })
@@ -84,12 +80,11 @@ export default () => {
           feedHandler(state, watchedState, state.inputForm.currentValue);
         })
         .catch((err) => {
-          console.log('validator',err)
-          watchedState.inputForm.validation = err.message;
+          watchedState.inputForm.status = err.message;
         })
         .finally(() => {
-          state.inputForm.validation = null;
-        })
+          state.inputForm.status = null;
+        });
     });
   });
 
