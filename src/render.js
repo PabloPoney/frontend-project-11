@@ -1,9 +1,4 @@
-const idGeneratorFactory = (counter) => {
-  let id = counter;
-  return () => {
-    return id--;
-  };
-};
+import { idGeneratorFactory } from "./idGeneratorFactory.js";
 
 const cardBlockGenerator = (titleName) => {
   const cardBlock = document.createElement('div');
@@ -28,9 +23,7 @@ const cardBlockGenerator = (titleName) => {
 
 const feedsRender = (state, elements, i18n) => {
   const { feedsBlock } = elements;
-  while (feedsBlock.firstChild) {
-    feedsBlock.removeChild(feedsBlock.firstChild);
-  }
+  feedsBlock.innerHTML = '';
 
   const { feeds } = state;
 
@@ -66,9 +59,7 @@ const postsRender = (state, elements, i18n) => {
   const generateId = idGeneratorFactory(posts.length);
 
   const { postsBlock, modalBlock } = elements;
-  while (postsBlock.firstChild) {
-    postsBlock.removeChild(postsBlock.firstChild);
-  }
+  postsBlock.innerHTML = '';
 
   const postsCardBlock = cardBlockGenerator(i18n.t('posts'));
   const postsListGroupBlock = postsCardBlock.querySelector('.list-group');

@@ -22,8 +22,7 @@ const parseFeed = (xml) => {
 };
 
 export const fetchFeed = (url) => axios.get(getProxyUrl(url))
-  .then((response) => parseFeed(response.data.contents))
-  .then((data) => ({ ...data, url }))
+  .then((response) => ({ ...parseFeed(response.data.contents), url }))
   .catch(() => {
     throw new Error(`network-error`);
   });

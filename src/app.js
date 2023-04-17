@@ -11,15 +11,12 @@ const feedHandler = (state, watchedState, url) => {
     if (feed.items.length !== 0) {
       watchedState.inputForm.status = 'valid';
 
-      const newFeed = {
-        title: feed.title,
-        url: feed.url,
-        description: feed.description,
-      };
+      const { title, url, description, items } = feed;
+      const newFeed = { title, url, description };
       watchedState.feeds = [ newFeed, ...state.feeds ];
-      watchedState.posts = [ ...feed.items, ...state.posts ];
+      watchedState.posts = [ ...items, ...state.posts ];
 
-      state.usedUrls.push(feed.url);
+      state.usedUrls.push(url);
       state.inputForm.currentValue = null;
     } else {
       watchedState.inputForm.status = 'no-rss';
