@@ -164,11 +164,9 @@ const btnSubmitRender = (state, elements) => {
   const { btnSubmit } = elements;
   switch (state.inputForm.status) {
     case 'filling':
-      console.log('filling');
       btnSubmit.removeAttribute('disabled');
       break;
     case 'sending':
-      console.log('sending');
       btnSubmit.setAttribute('disabled', '');
       break;
     default:
@@ -179,7 +177,6 @@ const btnSubmitRender = (state, elements) => {
 export const render = (path, state, elements, i18n) => {
   switch (path) {
     case 'inputForm.status':
-      console.log('render');
       btnSubmitRender(state, elements);
       break;
     case 'inputForm.validation':
