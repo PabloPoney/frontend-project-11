@@ -134,7 +134,7 @@ const feedbackAlertRender = (state, elements, i18n) => {
     input.classList.add('is-invalid');
   };
 
-  switch (state.inputForm.status) {
+  switch (state.inputForm.validation) {
     case 'valid':
       feedbackAlert.classList.replace('text-danger', 'text-success');
       feedbackAlert.textContent = i18n.t('rssAdded');
@@ -160,9 +160,29 @@ const feedbackAlertRender = (state, elements, i18n) => {
   }
 };
 
+const btnSubmitRender = (state, elements) => {
+  const { btnSubmit } = elements;
+  switch (state.inputForm.status) {
+    case 'filling':
+      console.log('filling');
+      btnSubmit.removeAttribute('disabled');
+      break;
+    case 'sending':
+      console.log('sending');
+      btnSubmit.setAttribute('disabled', '');
+      break;
+    default:
+      break;
+  }
+};
+
 export const render = (path, state, elements, i18n) => {
   switch (path) {
     case 'inputForm.status':
+      console.log('render');
+      btnSubmitRender(state, elements);
+      break;
+    case 'inputForm.validation':
       feedbackAlertRender(state, elements, i18n);
       break;
     case 'feeds':

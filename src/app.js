@@ -6,10 +6,11 @@ import { render } from './render.js';
 import { fetchFeed, updateFeeds } from './parser.js';
 
 const feedHandler = (state, watchedState, url) => {
+  watchedState.inputForm.status = 'sending';
   fetchFeed(url)
   .then((feed) => {
     if (feed.items.length !== 0) {
-      watchedState.inputForm.status = 'valid';
+      watchedState.inputForm.validation = 'valid';
 
       const { title, url, description, items } = feed;
       const newFeed = { title, url, description };
@@ -19,12 +20,15 @@ const feedHandler = (state, watchedState, url) => {
       state.usedUrls.push(url);
       state.inputForm.currentValue = null;
     } else {
-      watchedState.inputForm.status = 'no-rss';
+      watchedState.inputForm.validation = 'no-rss';
     }
   })
   .catch((err) => {
     console.log('feedHandler:', err);
-    watchedState.inputForm.status = err.message;
+    watchedState.inputForm.validation = err.message;
+  })
+  .finally(() => {
+    watchedState.inputForm.status = 'filling';
   });
 };
 
@@ -32,6 +36,7 @@ export const app = () => {
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('.form-control'),
+    btnSubmit: document.querySelector('.btn-lg'),
     feedbackAlert: document.querySelector('.feedback'),
     postsBlock: document.querySelector('.posts'),
     feedsBlock: document.querySelector('.feeds'),
@@ -42,7 +47,8 @@ export const app = () => {
     lng: 'ru',
     inputForm: {
       currentValue: null,
-      status: null,
+      validation: null,
+      status: 'filling',
     },
     feeds: [],
     posts: [],
@@ -77,10 +83,10 @@ export const app = () => {
           feedHandler(state, watchedState, state.inputForm.currentValue);
         })
         .catch((err) => {
-          watchedState.inputForm.status = err.message;
+          watchedState.inputForm.validation = err.message;
         })
         .finally(() => {
-          state.inputForm.status = null;
+          state.inputForm.validation = null;
         });
     });
   });
