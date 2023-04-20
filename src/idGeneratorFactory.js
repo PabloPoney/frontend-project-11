@@ -1,6 +1,7 @@
-export const idGeneratorFactory = (counter) => {
+export default (counter) => {
   let id = counter;
   return () => {
-    return id--;
+    id -= 1;
+    return id;
   };
 };

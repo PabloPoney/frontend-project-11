@@ -24,19 +24,19 @@ const parseFeed = (xml) => {
 export const fetchFeed = (url) => axios.get(getProxyUrl(url))
   .then((response) => ({ ...parseFeed(response.data.contents), url }))
   .catch(() => {
-    throw new Error(`network-error`);
+    throw new Error('network-error');
   });
 
 export const updateFeeds = (state, watchedState) => {
   const promises = state.feeds.map((feed) => fetchFeed(feed.url));
   Promise.all(promises)
-  .then((feeds) => {
-    feeds.forEach((feed) => {
-      const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
-      if (newPosts.length > 0) {
-        watchedState.posts = [ ...newPosts, ...state.posts ];
-      }
-    });
-  })
-  .finally(() => setTimeout(updateFeeds, 5000, state, watchedState));
+    .then((feeds) => {
+      feeds.forEach((feed) => {
+        const newPosts = _.differenceWith(feed.items, state.posts, _.isEqual);
+        if (newPosts.length > 0) {
+          watchedState.posts = [...newPosts, ...state.posts];
+        }
+      });
+    })
+    .finally(() => setTimeout(updateFeeds, 5000, state, watchedState));
 };

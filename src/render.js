@@ -1,4 +1,4 @@
-import { idGeneratorFactory } from "./idGeneratorFactory.js";
+import idGeneratorFactory from './idGeneratorFactory.js';
 
 const cardBlockGenerator = (titleName) => {
   const cardBlock = document.createElement('div');
@@ -35,7 +35,7 @@ const feedsRender = (state, elements, i18n) => {
     feedListElement.classList.add(
       'list-group-item',
       'border-0',
-      'border-end-0'
+      'border-end-0',
     );
 
     const feedListTitle = document.createElement('h3');
@@ -174,7 +174,7 @@ const btnSubmitRender = (state, elements) => {
   }
 };
 
-export const render = (path, state, elements, i18n) => {
+export default (path, state, elements, i18n) => {
   switch (path) {
     case 'inputForm.status':
       btnSubmitRender(state, elements);
